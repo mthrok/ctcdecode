@@ -69,9 +69,9 @@ class TestDecoders(unittest.TestCase):
         decoder = CTCBeamSearchDecoder(
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'), num_processes=24)
-        beamss, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
-        output_str1 = self.convert_to_string(beamss[0][0], self.vocab_list, beam_lengths[0][0])
-        output_str2 = self.convert_to_string(beamss[1][0], self.vocab_list, beam_lengths[1][0])
+        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
+        output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
         self.assertEqual(output_str1, self.beam_search_result[0])
         self.assertEqual(output_str2, self.beam_search_result[1])
     
@@ -81,31 +81,28 @@ class TestDecoders(unittest.TestCase):
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'), is_nll=True,
             num_processes=24)
-        beamss, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
-        output_str1 = self.convert_to_string(beamss[0][0], self.vocab_list, beam_lengths[0][0])
-        output_str2 = self.convert_to_string(beamss[1][0], self.vocab_list, beam_lengths[1][0])
+        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
+        output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
         self.assertEqual(output_str1, self.beam_search_result[0])
         self.assertEqual(output_str2, self.beam_search_result[1])
 
     def test_torchscript(self):
         probs_seq = torch.tensor([self.probs_seq1, self.probs_seq2])
 
-        buffer_ = io.BytesIO()
-        torch.jit.save(
-            torch.jit.script(
-                CTCBeamSearchDecoder(
-                    self.vocab_list, beam_size=self.beam_size,
-                    blank_id=self.vocab_list.index(' '),
-                )
-            ),
-            buffer_,
+        decoder = CTCBeamSearchDecoder(
+            self.vocab_list, beam_size=self.beam_size,
+            blank_id=self.vocab_list.index('_'), num_processes=24,
         )
+
+        buffer_ = io.BytesIO()
+        torch.jit.save(torch.jit.script(decoder), buffer_)
         buffer_.seek(0)
         decoder = torch.jit.load(buffer_)
-        
-        beamss, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
-        output_str1 = self.convert_to_string(beamss[0][0], self.vocab_list, beam_lengths[0][0])
-        output_str2 = self.convert_to_string(beamss[1][0], self.vocab_list, beam_lengths[1][0])
+
+        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
+        output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
         self.assertEqual(output_str1, self.beam_search_result[0])
         self.assertEqual(output_str2, self.beam_search_result[1])
 
