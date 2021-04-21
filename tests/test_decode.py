@@ -88,6 +88,8 @@ class TestDecoders(unittest.TestCase):
         self.assertEqual(output_str2, self.beam_search_result[1])
 
     def test_torchscript(self):
+        probs_seq = torch.tensor([self.probs_seq1, self.probs_seq2])
+
         buffer_ = io.BytesIO()
         torch.jit.save(
             torch.jit.script(
