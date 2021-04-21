@@ -25,12 +25,6 @@ pip install git+https://github.com/mthrok/ctcdecode
 
 **NOTE** This downloads and compiles `OpenFST`, so it takes a while.
 
-### Requirements
-
-* gcc
-* cmake
-* PyTorch 1.7<=
-
 ## Usage
 
 **NOTE** The order and the names of arguments are different from `parlance/ctcdecode`'s version.
