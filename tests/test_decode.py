@@ -38,7 +38,7 @@ class TestDecoders(unittest.TestCase):
         decoder = BeamSearchDecoder(
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'))
-        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        beams, beam_lengths, scores, timesteps = decoder(probs_seq)
         output_str = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
         self.assertEqual(output_str, self.beam_search_result[0])
 
@@ -47,7 +47,7 @@ class TestDecoders(unittest.TestCase):
         decoder = BeamSearchDecoder(
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'))
-        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        beams, beam_lengths, scores, timesteps = decoder(probs_seq)
         output_str = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
         self.assertEqual(output_str, self.beam_search_result[1])
 
@@ -60,7 +60,7 @@ class TestDecoders(unittest.TestCase):
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'),
             model_path=lm_path)
-        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        beams, beam_lengths, scores, timesteps = decoder(probs_seq)
         output_str = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
         self.assertEqual(output_str, self.beam_search_result[2])
 
@@ -69,7 +69,7 @@ class TestDecoders(unittest.TestCase):
         decoder = BeamSearchDecoder(
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'), num_processes=24)
-        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        beams, beam_lengths, scores, timesteps = decoder(probs_seq)
         output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
         output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
         self.assertEqual(output_str1, self.beam_search_result[0])
@@ -81,7 +81,7 @@ class TestDecoders(unittest.TestCase):
             self.vocab_list, beam_size=self.beam_size,
             blank_id=self.vocab_list.index('_'), is_nll=True,
             num_processes=24)
-        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        beams, beam_lengths, scores, timesteps = decoder(probs_seq)
         output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
         output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
         self.assertEqual(output_str1, self.beam_search_result[0])
@@ -100,7 +100,7 @@ class TestDecoders(unittest.TestCase):
         buffer_.seek(0)
         decoder = torch.jit.load(buffer_)
 
-        beams, beam_lengths, scores, timesteps = decoder.decode(probs_seq)
+        beams, scores, timesteps = decoder.decode(probs_seq)
         output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
         output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
         self.assertEqual(output_str1, self.beam_search_result[0])

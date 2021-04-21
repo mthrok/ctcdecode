@@ -1,6 +1,7 @@
-from typing import List, Optional
+from typing import List, Tuple, Optional
 
 import torch
+from torch import Tensor
 
 
 class BeamSearchDecoder(torch.nn.Module):
@@ -58,20 +59,7 @@ class BeamSearchDecoder(torch.nn.Module):
             self,
             probs: torch.Tensor,
             seq_lens: Optional[torch.Tensor] = None,
-    ):
-        return torch.ops.simple_ctc.beam_search_decode(
-            probs, seq_lens, self.labels, self.beam_size,
-            self.cutoff_top_n, self.cutoff_prob,
-            self.blank_id, self.is_nll,
-            self.num_processes,
-        )
-
-    @torch.jit.export
-    def decode(
-            self,
-            probs: torch.Tensor,
-            seq_lens: Optional[torch.Tensor] = None,
-    ):
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Performs beam search on the sequence of probabilities
 
         Args:
@@ -89,7 +77,7 @@ class BeamSearchDecoder(torch.nn.Module):
             beams:
                 Integer Tensor representing the top ``n`` beams.
                 Shape: ``[batch, num_beams, num_timesteps]``.
-            length:
+            beam_lengths:
                 Integer Tensor representing the length of each beam.
                 Shape: ``[batch, num_beams]``.
             scores:
@@ -100,4 +88,36 @@ class BeamSearchDecoder(torch.nn.Module):
                 the corresponding output character has peak probability.
                 Shape: ``[batch, num_beams, num_timesteps]``.
         """
-        return self.forward(probs, seq_lens)
+        return torch.ops.simple_ctc.beam_search_decode(
+            probs, seq_lens, self.labels, self.beam_size,
+            self.cutoff_top_n, self.cutoff_prob,
+            self.blank_id, self.is_nll,
+            self.num_processes,
+        )
+
+    @torch.jit.export
+    def decode(
+            self,
+            probs: torch.Tensor,
+            seq_lens: Optional[torch.Tensor] = None,
+    ) -> Tuple[List[List[List[str]]], List[List[float]], List[List[List[int]]]]:
+        beams, lengths, scores, timesteps = self.forward(probs, seq_lens)
+
+        batch_size = beams.size(0)
+        scores: List[List[float]] = scores.tolist()
+        # TODO: Add timesteps
+        # Timesteps seems to have an issue in C++ side.
+        # timesteps: List[List[List[int]]] = timesteps.tolist()
+        batch_texts: List[List[List[str]]] = []
+        batch_ts: List[List[List[int]]] = []
+        for i in range(batch_size):
+            sample_texts: List[List[str]] = []
+            # sample_ts: List[List[int]] = []
+            for j in range(self.beam_size):
+                sample_texts.append([self.labels[k] for k in beams[i, j, :lengths[i, j]]])
+                # ts: List[int] = timesteps[i][j][:lengths[i, j]]
+                # sample_ts.append(ts)
+            batch_texts.append(sample_texts)
+            # batch_ts.append(sample_ts)
+
+        return batch_texts, scores, batch_ts
