@@ -18,6 +18,13 @@ The main difference is;
 * Rename the module and decoder class (`simple_ctc.BeamSearchDecoder`)
 * Moved the original decode method to `forward` and replace `decode` method with high level API that performs label conversion as well.
 
+## Dependencies
+
+* OpenFST (statically built/linked when installing)
+* PyTorch
+
+See [requirements.txt](./requirements.txt) for the Python package requirements.
+
 ## Installation
 
 **NOTE** The build process downloads and compiles `OpenFST`, so it takes a while.
