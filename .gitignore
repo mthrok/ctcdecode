@@ -136,4 +136,5 @@ ENV/
 *.out
 *.app
 
-ctcdecode/ctcdecode.xcodeproj/
+third_party/archives
+third_party/install
