@@ -1,7 +1,7 @@
 import os
 
 import torch
-from ctcdecode import CTCBeamSearchDecoder
+from simple_ctcdecode import CTCBeamSearchDecoder
 
 WAV2VEC2_ENGLISH_LABEL = [
     '<s>',

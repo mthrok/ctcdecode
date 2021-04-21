@@ -4,7 +4,7 @@ import os
 import unittest
 
 import torch
-from ctcdecode import CTCBeamSearchDecoder
+from simple_ctcdecode import CTCBeamSearchDecoder
 
 
 class TestDecoders(unittest.TestCase):
