@@ -100,11 +100,9 @@ class TestDecoders(unittest.TestCase):
         buffer_.seek(0)
         decoder = torch.jit.load(buffer_)
 
-        beams, scores, timesteps = decoder.decode(probs_seq)
-        output_str1 = self.convert_to_string(beams[0][0], self.vocab_list, beam_lengths[0][0])
-        output_str2 = self.convert_to_string(beams[1][0], self.vocab_list, beam_lengths[1][0])
-        self.assertEqual(output_str1, self.beam_search_result[0])
-        self.assertEqual(output_str2, self.beam_search_result[1])
+        result = decoder.decode(probs_seq)
+        self.assertEqual(''.join(result.label_sequences[0][0]), self.beam_search_result[0])
+        self.assertEqual(''.join(result.label_sequences[1][0]), self.beam_search_result[1])
 
 
 if __name__ == '__main__':

@@ -1,7 +1,13 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, NamedTuple
 
 import torch
 from torch import Tensor
+
+
+class _DecodeResult(NamedTuple):
+    label_sequences: List[List[List[str]]]
+    scores: List[List[float]]
+    timesteps: List[List[List[int]]]
 
 
 class BeamSearchDecoder(torch.nn.Module):
@@ -13,7 +19,7 @@ class BeamSearchDecoder(torch.nn.Module):
     * https://github.com/PaddlePaddle/DeepSpeech
 
     Args:
-        labels (list):
+        labels (list os str):
             The tokens/vocabulary used in model training. It must be ordered
             in the same way as the model's output.
         beam_size (int):
@@ -100,7 +106,7 @@ class BeamSearchDecoder(torch.nn.Module):
             self,
             probs: torch.Tensor,
             seq_lens: Optional[torch.Tensor] = None,
-    ) -> Tuple[List[List[List[str]]], List[List[float]], List[List[List[int]]]]:
+    ) -> _DecodeResult:
         beams, lengths, scores, timesteps = self.forward(probs, seq_lens)
 
         batch_size = beams.size(0)
@@ -120,4 +126,4 @@ class BeamSearchDecoder(torch.nn.Module):
             batch_texts.append(sample_texts)
             # batch_ts.append(sample_ts)
 
-        return batch_texts, scores, batch_ts
+        return _DecodeResult(batch_texts, scores, batch_ts)

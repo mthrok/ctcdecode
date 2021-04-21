@@ -16,18 +16,27 @@ The main difference is;
 * Use Torch's `at::parallel_for` in place of `ThreadPool`.
 * Remove unused functions
 * Rename the module and decoder class (`simple_ctc.BeamSearchDecoder`)
+* Moved the original decode method to `forward` and replace `decode` method with high level API that performs label conversion as well.
 
 ## Installation
+
+**NOTE** The build process downloads and compiles `OpenFST`, so it takes a while.
 
 ```
 pip install git+https://github.com/mthrok/ctcdecode
 ```
 
-**NOTE** This downloads and compiles `OpenFST`, so it takes a while.
+For development
+
+```
+git clone https://github.com/mthrok/ctcdecode
+cd ctcdecode
+python setup.py develop
+```
 
 ## Usage
 
-**NOTE** The order and the names of arguments are different from `parlance/ctcdecode`'s version.
+**NOTE** Currently, `timesteps` is not correctly computed. so an empty list is returned.
 
 ```python
 from simple_ctc import BeamSearchDecoder
@@ -41,7 +50,11 @@ decoder = BeamSearchDecoder(
     is_nll=False,
     num_processes=4,
 )
-beams, beam_lengths, scores, timesteps = decoder.decode(prob_seqs, seq_lens)
+result = decoder.decode(prob_seqs, seq_lens)
+
+print(result.labels[batch][beam][:])  # Resulting label sequences. 3D list.
+print(result.scores[batch][beam])  # Scores of the sequences. 2D list.
+print(result.timesteps[batch][beam][:])  # Timesteps of each label peak probabilities. 3D list.
 ```
 
 This decoder supports TorchScript. You should be able to deploy the dumped object in non-Python environment by loading the `libctcdecode.so` in your application.
@@ -52,4 +65,6 @@ import torch
 path = 'decoder.zip'
 torch.jit.save(decoder, path)
 decoder = torch.jit.load(path)
+
+result = decoder.decoder(prob_seqs, seq_lens)
 ```
