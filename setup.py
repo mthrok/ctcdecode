@@ -85,7 +85,7 @@ def _load_requirements():
 
 def _main():
     setup(
-        name="simple-ctcdecode",
+        name="simple-ctc",
         version="0.0.1",
         description=(
             "Simple, TorchScript-able CTC beam search decoder "
@@ -94,9 +94,9 @@ def _main():
         url="https://github.com/mthrok/ctcdecode",
         author="moto",
         author_email="moto@fb.com",
-        packages=["simple_ctcdecode"],
+        packages=["simple_ctc"],
         install_requires=_load_requirements(),
-        ext_modules=[Extension(name='simple_ctcdecode.libctcdecode', sources=[])],
+        ext_modules=[Extension(name='simple_ctc.libctcdecode', sources=[])],
         cmdclass={
             'build_ext': CMakeBuild,
         }
