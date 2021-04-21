@@ -2,6 +2,8 @@
 #include "decoder_utils.h"
 #include "path_trie.h"
 
+using namespace torch::indexing;
+
 namespace ctcdecode {
 
 DecoderState::DecoderState(const std::vector<std::string> &vocabulary,
@@ -22,6 +24,20 @@ DecoderState::DecoderState(const std::vector<std::string> &vocabulary,
   // init prefixes' root
   root.score = root.log_prob_b_prev = 0.0;
   prefixes.push_back(&root);
+}
+
+void DecoderState::next(const torch::Tensor &probs_seq) {
+  std::vector<std::vector<double>> probs_seq_;
+
+  auto num_classes = probs_seq.size(1);
+  for (auto t = 0; t < probs_seq.size(0); ++t) {
+    std::vector<double> tmp(num_classes);
+    auto probs = probs_seq.index({t, Slice()}).contiguous().to(torch::kDouble);
+    auto data_ptr = probs.data_ptr<double>();
+    memcpy(tmp.data(), data_ptr, sizeof(double) * num_classes);
+    probs_seq_.push_back(tmp);
+  }
+  next(probs_seq_);
 }
 
 void DecoderState::next(const std::vector<std::vector<double>> &probs_seq) {
@@ -116,7 +132,7 @@ std::vector<std::pair<double, Output>> DecoderState::decode() const {
 }
 
 std::vector<std::pair<double, Output>>
-ctc_beam_search_decoder(const std::vector<std::vector<double>> &probs_seq,
+ctc_beam_search_decoder(const torch::Tensor &probs_seq,
                         const std::vector<std::string> &vocabulary,
                         size_t beam_size, double cutoff_prob,
                         size_t cutoff_top_n, size_t blank_id, int log_input) {

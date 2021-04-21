@@ -6,6 +6,8 @@
 
 #include "ctc_beam_search_decoder.h"
 
+using namespace torch::indexing;
+
 namespace ctcdecode {
 namespace {
 
@@ -49,32 +51,14 @@ beam_decode(torch::Tensor probs, c10::optional<torch::Tensor> seq_lens_,
     return torch::full({batch_size}, max_seq_len, torch::kInt32);
   }();
 
-  // Copy data into the format ctc beam search expects
-  std::vector<std::vector<std::vector<double>>> inputs;
-  auto prob_accessor = probs.accessor<float, 3>();
-  auto seq_len_accessor = seq_lens.accessor<int, 1>();
-
-  // TODO: use slicing and memcpy OR pass Tensor directly to ctc_beam_search_decoder
-  for (int64_t b = 0; b < batch_size; ++b) {
-    int seq_len = (int)seq_len_accessor[b];
-    std::vector<std::vector<double>> temp(seq_len,
-                                          std::vector<double>(num_classes));
-    for (int t = 0; t < seq_len; ++t) {
-      for (int n = 0; n < num_classes; ++n) {
-        float val = prob_accessor[b][t][n];
-        temp[t][n] = val;
-      }
-    }
-    inputs.push_back(temp);
-  }
-
   std::vector<std::vector<std::pair<double, Output>>> batch_results(batch_size);
   auto grain_size = batch_size / num_processes;
   at::parallel_for(0, batch_size, grain_size, [&](int64_t begin, int64_t end) {
     for (auto i = begin; i < end; ++i) {
-      batch_results[i] =
-          ctc_beam_search_decoder(inputs[i], vocabulary, beam_size, cutoff_prob,
-                                  cutoff_top_n, blank_id, is_nll);
+      auto seq_len = seq_lens[i].item<int>();
+      batch_results[i] = ctc_beam_search_decoder(
+          probs.index({i, Slice(0, seq_len), Slice()}), vocabulary, beam_size,
+          cutoff_prob, cutoff_top_n, blank_id, is_nll);
     }
   });
 

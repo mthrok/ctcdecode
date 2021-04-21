@@ -6,14 +6,15 @@
 
 #include "output.h"
 #include "path_trie.h"
+#include <torch/script.h>
 
 namespace ctcdecode {
 
 /* CTC Beam Search Decoder
 
  * Parameters:
- *     probs_seq: 2-D vector that each element is a vector of probabilities
- *               over vocabulary of one time step.
+ *     probs_seq: Time series of probability distribution. Tensor [num_frames,
+ num_classes]
  *     vocabulary: A vector of vocabulary.
  *     beam_size: The width of beam search.
  *     cutoff_prob: Cutoff probability for pruning.
@@ -22,13 +23,10 @@ namespace ctcdecode {
  *     A vector that each element is a pair of score  and decoding result,
  *     in desending order.
 */
-
-std::vector<std::pair<double, Output>>
-ctc_beam_search_decoder(const std::vector<std::vector<double>> &probs_seq,
-                        const std::vector<std::string> &vocabulary,
-                        size_t beam_size, double cutoff_prob = 1.0,
-                        size_t cutoff_top_n = 40, size_t blank_id = 0,
-                        int log_input = 0);
+std::vector<std::pair<double, Output>> ctc_beam_search_decoder(
+    const torch::Tensor &probs_seq, const std::vector<std::string> &vocabulary,
+    size_t beam_size, double cutoff_prob = 1.0, size_t cutoff_top_n = 40,
+    size_t blank_id = 0, int log_input = 0);
 
 class DecoderState {
   int abs_time_step;
@@ -64,6 +62,7 @@ public:
    *               over alphabet of one time step.
    */
   void next(const std::vector<std::vector<double>> &probs_seq);
+  void next(const torch::Tensor &probs_seq);
 
   /* Get current transcription from the decoder stream state
    *
