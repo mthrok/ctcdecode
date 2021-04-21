@@ -19,7 +19,7 @@ class BeamSearchDecoder(torch.nn.Module):
     * https://github.com/PaddlePaddle/DeepSpeech
 
     Args:
-        labels (list os str):
+        labels (list of str):
             The tokens/vocabulary used in model training. It must be ordered
             in the same way as the model's output.
         beam_size (int):
