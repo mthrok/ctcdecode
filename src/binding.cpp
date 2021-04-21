@@ -109,7 +109,7 @@ beam_decode(torch::Tensor probs, c10::optional<torch::Tensor> seq_lens_,
   return std::make_tuple(beams, output_lengths, scores, timesteps);
 }
 
-TORCH_LIBRARY(ctcdecode, m) { m.def("beam_decode", &beam_decode); }
+TORCH_LIBRARY(simple_ctc, m) { m.def("beam_search_decode", &beam_decode); }
 
 } // namespace
 } // namespace ctcdecode

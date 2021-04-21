@@ -3,7 +3,7 @@ from typing import List, Optional
 import torch
 
 
-class CTCBeamSearchDecoder(torch.nn.Module):
+class BeamSearchDecoder(torch.nn.Module):
     """Beam search decoder
 
     The implementation was ported from
@@ -54,6 +54,18 @@ class CTCBeamSearchDecoder(torch.nn.Module):
         self.is_nll = is_nll
         self.num_processes = num_processes
 
+    def forward(
+            self,
+            probs: torch.Tensor,
+            seq_lens: Optional[torch.Tensor] = None,
+    ):
+        return torch.ops.simple_ctc.beam_search_decode(
+            probs, seq_lens, self.labels, self.beam_size,
+            self.cutoff_top_n, self.cutoff_prob,
+            self.blank_id, self.is_nll,
+            self.num_processes,
+        )
+
     @torch.jit.export
     def decode(
             self,
@@ -88,9 +100,4 @@ class CTCBeamSearchDecoder(torch.nn.Module):
                 the corresponding output character has peak probability.
                 Shape: ``[batch, num_beams, num_timesteps]``.
         """
-        return torch.ops.ctcdecode.beam_decode(
-            probs, seq_lens, self.labels, self.beam_size,
-            self.cutoff_top_n, self.cutoff_prob,
-            self.blank_id, self.is_nll,
-            self.num_processes,
-        )
+        return self.forward(probs, seq_lens)

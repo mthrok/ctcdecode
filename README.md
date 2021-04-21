@@ -15,7 +15,7 @@ The main difference is;
 * Use TorchScript for bind the C++
 * Use Torch's `at::parallel_for` in place of `ThreadPool`.
 * Remove unused functions
-* Rename to CTCBeamSearchDecoder
+* Rename the module and decoder class (`simple_ctc.BeamSearchDecoder`)
 
 ## Installation
 
@@ -36,9 +36,9 @@ pip install git+https://github.com/mthrok/ctcdecode
 **NOTE** The order and the names of arguments are different from `parlance/ctcdecode`'s version.
 
 ```python
-from ctcdecode import CTCBeamSearchDecoder
+from simple_ctc import BeamSearchDecoder
 
-decoder = CTCBeamSearchDecoder(
+decoder = BeamSearchDecoder(
     labels,
     beam_size=100,
     cutoff_top_n=40,

@@ -1,1 +1,3 @@
-torch
+torch>=1.8
+cmake>=3.9
+ninja

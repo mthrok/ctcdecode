@@ -78,16 +78,25 @@ class CMakeBuild(build_ext):
         return ext_filename
 
 
+def _load_requirements():
+    with open(ROOT_DIR / 'requirements.txt', 'r') as fileobj:
+        return fileobj.read().splitlines()
+
+
 def _main():
     setup(
-        name="simple-ctcdecode",
+        name="simple-ctc",
         version="0.0.1",
-        description="Simple, TorchScript-able CTC Decoder based on parlance/ctcdecode",
+        description=(
+            "Simple, TorchScript-able CTC beam search decoder "
+            "based on parlance/ctcdecode."
+        ),
         url="https://github.com/mthrok/ctcdecode",
         author="moto",
         author_email="moto@fb.com",
-        packages=find_packages(exclude=["build", "tests", "third_party", "src"]),
-        ext_modules=[Extension(name='ctcdecode.libctcdecode', sources=[])],
+        packages=["simple_ctc"],
+        install_requires=_load_requirements(),
+        ext_modules=[Extension(name='simple_ctc.libctcdecode', sources=[])],
         cmdclass={
             'build_ext': CMakeBuild,
         }
