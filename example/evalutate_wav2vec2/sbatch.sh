@@ -26,6 +26,12 @@ for num_threads in 32 16 8 4 2 1; do
                      --dict-file "${model_dir}/dict.ltr.txt" \
                      --num-threads "${num_threads}" \
                      > "${output_dir}/log.txt" 2>&1
+            sclite \
+                -r "${output_dir}/ref.trn" \
+                -h "${output_dir}/hyp.trn" \
+                -i wsj \
+                -o pralign \
+                -o sum
         done
     done
 done
