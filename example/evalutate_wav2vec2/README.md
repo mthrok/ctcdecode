@@ -59,4 +59,4 @@ HYP:  oh but i'm glad to get this place MOULD
 Eval:                                   S
 ```
 
-Using `wav2vec_small_960h.pt` (Wav2Vec 2.0 Base finetuned with 960 hours Librispeech), we get WER 3.1, which is close to 3.2 in the paper.
+Using `wav2vec_small_960h.pt` (Wav2Vec 2.0 Base finetuned with 960 hours Librispeech), we get WER 3.1, which is close to 3.4 in the paper.
