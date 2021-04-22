@@ -18,6 +18,16 @@ The main difference is;
 * Rename the module and decoder class (`simple_ctc.BeamSearchDecoder`)
 * Moved the original decode method to `forward` and replace `decode` method with high level API that performs label conversion as well.
 
+## TODO
+
+* Add language model back.
+  * Which LM should we use?
+    * [KenLM](https://github.com/kpu/kenlm) (as in the original)
+    * [SRILM](http://www.speech.sri.com/projects/srilm/) (non-commerial use only without huge fee)
+    * [IRSTLM](https://hlt-mt.fbk.eu/technologies/irstlm)
+    * [MITLM](https://github.com/mitlm/mitlm)
+* Fix timestep bug.
+
 ## Dependencies
 
 * OpenFST (statically built/linked when installing)
